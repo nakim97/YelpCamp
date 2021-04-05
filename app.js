@@ -46,13 +46,13 @@ app.get('/campgrounds', catchAsync(async (req, res) => {
     res.render('campgrounds/index', {
         campgrounds
     })
-}))
+}));
 
 app.get('/campgrounds/new', (req, res) => {
     res.render('campgrounds/new');
 })
 
-app.post('/campgrounds', catchAsync(async (req, res, next) => {
+app.post('/campgrounds',catchAsync(async (req, res, next) => {
     if (!req.body.campground) throw new ExpressError('Invalid Campground Data', 400);
     const campground = new Campground(req.body.campground);
     await campground.save();
@@ -60,33 +60,23 @@ app.post('/campgrounds', catchAsync(async (req, res, next) => {
 }))
 app.get('/campgrounds/:id', catchAsync(async (req, res) => {
     const campground = await Campground.findById(req.params.id)
-    res.render('campgrounds/show', {
-        campground
-    });
-}))
+    res.render('campgrounds/show', { campground });
+}));
+
 
 app.get('/campgrounds/:id/edit', catchAsync(async (req, res) => {
     const campground = await Campground.findById(req.params.id)
-    res.render('campgrounds/edit', {
-        campground
-    });
-
+    res.render('campgrounds/edit', { campground });
 }))
 
-app.put('/campgrounds/:id', catchAsync(async (req, res) => {
-    const {
-        id
-    } = req.params;
-    const campground = await Campground.findByIdAndUpdate(id, {
-        ...req.body.campground
-    })
+app.put('/campgrounds/:id',catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
     res.redirect(`/campgrounds/${campground._id}`)
-}))
+}));
 
 app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
-    const {
-        id
-    } = req.params;
+    const { id } = req.params;
     await Campground.findByIdAndDelete(id);
     res.redirect('/campgrounds');
 }));
@@ -96,10 +86,9 @@ app.all('*', (req, res, next) => {
 })
 
 app.use((err, req, res, next) => {
-    const {
-        statusCode = 500, message = 'Something went wrong'
-    } = err;
-    res.status(statusCode).send(message)
+    const { statusCode = 500 } = err;
+    if (!err.message) err.message = 'Oh Nooooooo'
+    res.status(statusCode).render('error', { err })
 })
 
 app.listen(3000, () => {
